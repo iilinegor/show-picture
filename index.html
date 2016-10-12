@@ -4,17 +4,63 @@
 	<title>Show Picture</title>
 
 <style type="text/css">
-	.prw .dz-preview .dz-image img{ 
-		position: absolute;
-		top: 0px;
-		left: 0px;
-		max-width: 100vw;
-		height: 100vh;
+	.prw {
+		height: 200px;
+		width: 300px;
+		text-align: center;
+	}
+
+	.prw .dz-image {
+		height: inherit;
+	}
+
+	body {
+		background-color: #272822;
+	}
+
+	html {
+		font-family: "Arial"
+  		color: rgba(255, 255, 255, 0.6);
+	}
+
+	label {
+		font-size: 18px;
+  		color: rgba(255, 255, 255, 0.6);
+	}
+
+	h1 {
+		color: #fefefe;
+		text-align: center;
+	}
+
+	.prw .dz-image img { 
+		height: inherit;
 		z-index: 5;
-		filter: grayscale(100%);
+		/*filter: invert(100%);*/
 		transform: scaleX(-1);
 		transition: transform 10s;
 	}
+
+	.grscale {
+		filter: grayscale(100%) invert(100%) !important;
+		transition: filter 2s;
+	}
+
+	#preview {
+		z-index: 5;
+		filter: invert(100%);
+		transform: scaleX(-1);
+		transition: transform 10s;
+	}
+
+	#options {
+		position: absolute;
+		left: calc(100vw - 150px);
+		top: 50px;
+	}
+
+	.resizer { width: 10px; height: 10px; background: cyan; position:absolute; left: 0; bottom: 0; cursor: se-resize; }
+
 
 
 </style>
@@ -22,10 +68,74 @@
 
 </head>
 <body>
-<div class="prw"></div>
-<h1>Show Picture</h1>
-	<form id="my-awesome-dropzone" action="/target" class="dropzone"></form>
-<!-- <script type="text/javascript" src="./index.js"/> -->
+	<h1>Show Picture</h1>
+	<div class="prw"></div>
+		<form id="my-awesome-dropzone" action="/target" class="dropzone"></form>
+	<div id="options">
+		<input id="grscale" type="checkbox" >
+			<label for="grscale">Чёрно-белый</label>
+	</div>
+
+
+
 <script type="text/javascript" src="./untitled.js" />
+<script type="text/javascript">
+	var Dropzone = require("dropzone");
+</script>
+
+<script type="text/javascript">
+
+	var p = document.querySelector('.prw');
+
+	p.addEventListener('click', function init() {
+	    p.removeEventListener('click', init, false);
+		p = document.querySelector('#preview');
+	    p.className = p.className + ' resizable';
+	    var resizer = document.createElement('div');
+	    resizer.className = 'resizer';
+	    document.querySelector('#preview').appendChild(resizer);
+	    document.querySelector('#my-awesome-dropzone').style.display = "none";
+
+	    resizer.addEventListener('mousedown', initDrag, false);
+	}, false);
+
+	var startX, startY, startWidth, startHeight, ratio, grscale = 1;
+
+	function initDrag(e) {
+	   startX = e.clientX;
+	   startY = e.clientY;
+	   startWidth = parseInt(document.defaultView.getComputedStyle(p).width, 10);
+	   startHeight = parseInt(document.defaultView.getComputedStyle(p).height, 10);
+	   ratio = startWidth / startHeight;
+
+	   document.documentElement.addEventListener('mousemove', doDrag, false);
+	   document.documentElement.addEventListener('mouseup', stopDrag, false);
+	}
+
+	function doDrag(e) {
+		var vector = ((e.clientX - startX) + (e.clientY - startY))/ 2;
+		p.style.width = (startWidth + vector ) + 'px';
+		p.style.height = (startWidth + vector ) / ratio + 'px';
+
+		e.target.ownerDocument.defaultView.getSelection().removeAllRanges();
+	}
+
+	function stopDrag(e) {
+	    document.documentElement.removeEventListener('mousemove', doDrag, false);    
+	    document.documentElement.removeEventListener('mouseup', stopDrag, false);
+	}
+
+	document.querySelector('#grscale').addEventListener('click', function gr() {
+		if ((grscale % 2) === 1) {
+				document.querySelector('#preview').className = document.querySelector('#preview').className + ' grscale';
+			}
+		else{
+				document.querySelector('#preview').className = ' ';
+			}
+		grscale++;
+
+	})
+</script>
+
 </body>
 </html>
